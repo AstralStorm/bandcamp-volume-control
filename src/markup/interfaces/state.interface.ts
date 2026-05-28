@@ -7,4 +7,5 @@ export interface IState {
 
 export interface IStorageState {
   bk_bvc_volume: number;
+  exponentialVolume: boolean;
 }
