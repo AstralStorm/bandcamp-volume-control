@@ -30,8 +30,14 @@ export abstract class AbstractMarkupControl {
   protected abstract generateMarkup<T extends HTMLElement>(): T;
   protected abstract adjustPlayerStyles(): void;
 
+  public setExponentialVolume(value: boolean, isManualChange = false): void {
+    this.handleState.exponentialVolume = value;
+    this.updateVolume(this.normaliseVolumeByPosition(this.handleState.lastHandlePosition), isManualChange);
+  }
+
   public updateVolume(volume: number, isManualChange = false): void {
-    const volumePercentage = Math.round(volume * 100);
+    const volumePercentage = Math.round(
+      (this.handleState.exponentialVolume ? (Math.expm1(volume) / (Math.E - 1)) : volume) * 100);
     const text = `Vol: ${volumePercentage} %`;
     this.controlElements.controlVolume!.textContent = text;
 
@@ -49,6 +55,7 @@ export abstract class AbstractMarkupControl {
       clicked: false,
       deltaX: 0,
       lastHandlePosition: 0,
+      exponentialVolume: false,
     };
   }
 
@@ -126,7 +133,7 @@ export abstract class AbstractMarkupControl {
     const handleWidth: number = this.controlElements.controlHandle!.clientWidth;
     const progbarWidth: number = this.controlElements.controlProgress!.clientWidth;
     const trackWidth = progbarWidth - handleWidth;
-    const position = trackWidth * volume;
+    const position = trackWidth * this.handleState.exponentialVolume ? Math.log1p(volume * (Math.E - 1)) : volume;
 
     return position;
   }
@@ -143,7 +150,7 @@ export abstract class AbstractMarkupControl {
       volume = 1;
     }
 
-    return volume;
+    return this.handleState.exponentialVolume ? (Math.exp1m(volume) / (Math.E - 1)) : volume;
   }
 
   private updateHandlePosition(position: number): void {
