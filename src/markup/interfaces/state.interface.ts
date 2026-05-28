@@ -2,6 +2,7 @@ export interface IState {
   clicked: boolean;
   deltaX: number;
   lastHandlePosition: number;
+  exponentialVolume: boolean;
 }
 
 export interface IStorageState {
